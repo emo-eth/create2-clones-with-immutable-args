@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD
 pragma solidity ^0.8.4;
 
-import {Clone} from "./Clone.sol";
+import { Clone } from "./Clone.sol";
 
 contract ExampleClone is Clone {
     function param1() public pure returns (address) {

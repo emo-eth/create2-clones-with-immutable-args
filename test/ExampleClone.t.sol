@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: BSD
 pragma solidity ^0.8.4;
 
-import {DSTest} from "ds-test/test.sol";
+import { DSTest } from "ds-test/test.sol";
 
-import {Hevm} from "./utils/Hevm.sol";
-import {ExampleClone} from "../ExampleClone.sol";
-import {ExampleCloneFactory} from "../ExampleCloneFactory.sol";
+import { Hevm } from "./utils/Hevm.sol";
+import { ExampleClone } from "../src/ExampleClone.sol";
+import { ExampleCloneFactory } from "../src/ExampleCloneFactory.sol";
 
 contract ExampleCloneTest is DSTest {
     Hevm internal constant hevm = Hevm(HEVM_ADDRESS);
@@ -16,7 +16,7 @@ contract ExampleCloneTest is DSTest {
     function setUp() public {
         ExampleClone implementation = new ExampleClone();
         factory = new ExampleCloneFactory(implementation);
-        clone = factory.createClone(address(this), type(uint256).max, 8008, 69);
+        clone = factory.createClone(address(this), type(uint256).max, 8008, 69, bytes32(0));
     }
 
     /// -----------------------------------------------------------------------
