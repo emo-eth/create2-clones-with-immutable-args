@@ -11,7 +11,7 @@ jobs:
         with:
           node-version: "16.x"
           registry-url: "https://registry.npmjs.org"
-      - run: grep -RiIln 'create2-helpers' src | xargs sed -i 's/create2\-helpers/@emo-eth\/create2-helpers/g'
+      - run: grep -RiIln 'create2-helpers' src | xargs sed -i 's/create2\-helpers/@emo-eth\/create2-helpers\/src/g'
       - run: yarn
       - run: npm publish --access public
         env:
