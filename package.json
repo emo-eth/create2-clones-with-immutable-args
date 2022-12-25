@@ -2,12 +2,11 @@
   "name": "@emo-eth/create2-clones-with-immutable-args",
   "author": "wighawag, emo.eth",
   "license": "BSD",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Factory for deploying clones with immutable parameters to deterministic addresses.",
   "files": [
     "src"
   ],
- 
   "scripts": {
     "test": "forge test -vvv"
   },
