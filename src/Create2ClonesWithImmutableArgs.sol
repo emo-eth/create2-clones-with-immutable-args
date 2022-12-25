@@ -2,6 +2,8 @@
 
 pragma solidity ^0.8.4;
 
+import { Create2AddressDeriver } from "create2-helpers/lib/Create2AddressDeriver.sol";
+
 /// @title Create2ClonesWithImmutableArgs
 /// @author wighawag, zefram.eth, emo.eth
 /// @notice Enables creating clone contracts with immutable args to deterministic addresses
@@ -17,13 +19,52 @@ library Create2ClonesWithImmutableArgs {
         internal
         returns (address payable instance)
     {
+        (uint256 ptr, uint256 creationSize) = _createBytecode(implementation, data);
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            instance := create2(0, ptr, creationSize, salt)
+        }
+        if (instance == address(0)) {
+            revert CreateFail();
+        }
+    }
+
+    function deriveAddress(address deployer, address implementation, bytes memory data, bytes32 salt)
+        internal
+        pure
+        returns (address)
+    {
+        (uint256 ptr, uint256 codeLength) = _createBytecode(implementation, data);
+        bytes memory creationCode;
+        // the clones library does not store length before the bytecode, so we need to do it ourselves
+        // we'll cache the value at sub(ptr, 0x20) and restore it after
+        uint256 cached;
+        ///@solidity memory-safe-assembly
+        assembly {
+            creationCode := sub(ptr, 0x20)
+            cached := mload(creationCode)
+            mstore(creationCode, codeLength)
+        }
+        address derived = Create2AddressDeriver.deriveCreate2Address(deployer, salt, creationCode);
+        // restore cached value
+        ///@solidity memory-safe-assembly
+        assembly {
+            mstore(creationCode, cached)
+        }
+        return derived;
+    }
+
+    function _createBytecode(address implementation, bytes memory data)
+        internal
+        pure
+        returns (uint256 ptr, uint256 creationSize)
+    {
         // unrealistic for memory ptr or data length to exceed 256 bits
         unchecked {
             uint256 extraLength = data.length + 2; // +2 bytes for telling how much data there is appended to the call
-            uint256 creationSize = 0x41 + extraLength;
+            creationSize = 0x41 + extraLength;
             uint256 runSize = creationSize - 10;
             uint256 dataPtr;
-            uint256 ptr;
             // solhint-disable-next-line no-inline-assembly
             assembly {
                 ptr := mload(0x40)
@@ -120,13 +161,7 @@ library Create2ClonesWithImmutableArgs {
             assembly {
                 mstore(copyPtr, shl(240, extraLength))
             }
-            // solhint-disable-next-line no-inline-assembly
-            assembly {
-                instance := create2(0, ptr, creationSize, salt)
-            }
-            if (instance == address(0)) {
-                revert CreateFail();
-            }
         }
+        return (ptr, creationSize);
     }
 }
